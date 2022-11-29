@@ -25,9 +25,9 @@ namespace EmguFFmpeg
             return encode;
         }
 
-        public static MediaEncoder CreateVideoEncode(OutFormat oformat, int width, int height, int fps, long bitRate = 0, AVPixelFormat format = AVPixelFormat.AV_PIX_FMT_NONE)
+        public static MediaEncoder CreateVideoEncode(OutFormat oformat, int width, int height, double fps, long bitRate = 0, AVPixelFormat format = AVPixelFormat.AV_PIX_FMT_NONE, MediaDictionary opts = null, int gopSize = -1)
         {
-            return CreateVideoEncode(oformat.VideoCodec, oformat.Flags, width, height, fps, bitRate, format);
+            return CreateVideoEncode(oformat.VideoCodec, oformat.Flags, width, height, fps, bitRate, format, opts, gopSize);
         }
 
         /// <summary>
@@ -40,8 +40,10 @@ namespace EmguFFmpeg
         /// <param name="fps">fps, must be greater than 0</param>
         /// <param name="bitRate">default is auto bit rate, must be greater than or equal to 0</param>
         /// <param name="format">default is first supported pixel format</param>
+        /// <param name="opts">default is null</param>
+        /// <param name="gopSize">default -1 (i.e not used)</param>
         /// <returns></returns>
-        public static MediaEncoder CreateVideoEncode(AVCodecID videoCodec, int flags, int width, int height, int fps, long bitRate = 0, AVPixelFormat format = AVPixelFormat.AV_PIX_FMT_NONE)
+        public static MediaEncoder CreateVideoEncode(AVCodecID videoCodec, int flags, int width, int height, double fps, long bitRate = 0, AVPixelFormat format = AVPixelFormat.AV_PIX_FMT_NONE, MediaDictionary opts = null, int gopSize = -1)
         {
             return CreateEncode(videoCodec, flags, _ =>
             {
@@ -56,10 +58,12 @@ namespace EmguFFmpeg
                     throw new FFmpegException(FFmpegException.NotSupportFormat);
                 pCodecContext->width = width;
                 pCodecContext->height = height;
-                pCodecContext->time_base = new AVRational { num = 1, den = fps };
+                pCodecContext->time_base = FFmpegHelper.ToAVRational(fps);
                 pCodecContext->pix_fmt = format;
                 pCodecContext->bit_rate = bitRate;
-            });
+                if(gopSize != -1)
+                    pCodecContext->gop_size = gopSize;
+            }, opts);
         }
 
         public static MediaEncoder CreateAudioEncode(OutFormat Oformat, AVChannelLayout channelLayout, int sampleRate, long bitRate = 0, AVSampleFormat format = AVSampleFormat.AV_SAMPLE_FMT_NONE)
