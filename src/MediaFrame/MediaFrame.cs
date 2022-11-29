@@ -159,6 +159,12 @@ namespace EmguFFmpeg
             set => pFrame->pkt_duration = value;
         }
 
+        public int KeyFrame
+        {
+            get => pFrame->key_frame;
+            set => pFrame->key_frame = value;
+        }
+
         public int SampleRate
         {
             get => pFrame->sample_rate;
