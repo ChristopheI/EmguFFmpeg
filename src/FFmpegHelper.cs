@@ -57,7 +57,7 @@ namespace EmguFFmpeg
             ffmpeg.avdevice_register_all();
         }
 
-        #region Extension
+    #region Extension
 
         /// <summary>
         /// Copies all characters up to the first null character from an unmanaged UTF8 string
@@ -81,7 +81,13 @@ namespace EmguFFmpeg
         /// </summary>
         public static bool IsThrowIfError { get; set; } = true;
 
-        internal static int ThrowIfError(this int error)
+        /// <summary>
+        /// According <see cref="IsThrowIfError"/> throw exception if integer value is negative otherwise return error code
+        /// </summary>
+        /// <param name="error">integer error code from FFmpeg lib</param>
+        /// <returns>error code</returns>
+        /// <exception cref="FFmpegException"></exception>
+        public static int ThrowIfError(this int error)
         {
             return IsThrowIfError ? (error < 0 ? throw new FFmpegException(error) : error) : error;
         }
@@ -100,6 +106,20 @@ namespace EmguFFmpeg
         }
 
         /// <summary>
+        /// Convert a double to an <see cref="AVRational"/> use <see cref="ffmpeg.av_d2q(d, max)"/>.
+        /// <para>
+        /// NOTE: this will lose precision !!
+        /// </para>
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        public static AVRational ToAVRational(double d, int max = 1000000)
+        {
+            return ffmpeg.av_d2q(d, max);
+        }
+
+        /// <summary>
         /// Invert a <see cref="AVRational"/> use <see cref="ffmpeg.av_inv_q(AVRational)"/>
         /// </summary>
         /// <param name="rational"></param>
@@ -109,8 +129,7 @@ namespace EmguFFmpeg
             return ffmpeg.av_inv_q(rational);
         }
 
-
-        #endregion
+    #endregion Extension
 
         /// <summary>
         /// Return default channel layout for a given number of channels use <see cref="ffmpeg.av_get_default_channel_layout(int)"/>
